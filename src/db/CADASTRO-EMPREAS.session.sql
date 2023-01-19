@@ -1,0 +1,1 @@
+INSERT INTO public."Empresas"(nome,cnpj,latitude,longitude) VALUES ('Empresa 1','12345678901234',-23.5505,-46.6333);

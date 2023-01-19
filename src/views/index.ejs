@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link type="text" rel="stylesheet" href="style/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+      integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI="
+      crossorigin=""
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
+      integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM="
+      crossorigin=""
+    ></script>
+    <title>Cadastro de Empresa</title>
+    <style>
+      #map {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 40%;
+        height: 400px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Cadastro de Empresa</h1>
+      <div class="form">
+        <form action="/cadastro" method="post">
+          <label for="nome">Nome:</label>
+          <input type="text" name="nome" id="nome-input" required />
+          <label for="cnpj">CNPJ:</label>
+          <input
+            type="text"
+            name="cnpj"
+            id="cnpj-input"
+            maxlength="18"
+            required
+          />
+          <label for="latitude">latitude:</label>
+          <input type="text" name="latitude" id="latitude-input" />
+          <label for="longitude">longitude:</label>
+          <input type="text" name="longitude" id="longitude-input" required />
+          <label for="indicacao">Indicação</label>
+          <select name="indicacao" id="indicacao">
+            <option value="0">Selecione Empresa</option>
+            <% buscar.forEach((i) => { %>
+            <option value="<%= i.id%>"><%= i.nome%></option>
+            <% }) %>
+          </select>
+
+          <button type="submit">Cadastrar</button>
+        </form>
+        <div id="map"></div>
+      </div>
+    </div>
+    <script>
+      const cnpj = document.querySelector("#cnpj-input");
+      cnpj.addEventListener("input", (e) => {
+        let value = e.target.value;
+        value = value.replace(/\D/g, "");
+        value = value.replace(/(\d{2})(\d)/, "$1.$2");
+        value = value.replace(/(\d{3})(\d)/, "$1.$2");
+        value = value.replace(/(\d{3})(\d)/, "$1/$2");
+        value = value.replace(/(\d{4})(\d)/, "$1-$2");
+        e.target.value = value;
+      });
+      const map = L.map("map").setView([-23.5505, -46.6333], 2);
+      let tileLayer = L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+          minZomm: 17,
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        }
+      ).addTo(map);
+      let req = new XMLHttpRequest();
+      req.open("GET", "http://localhost:8080/coord");
+      req.send();
+      req.onload = function () {
+        let data = JSON.parse(req.response);
+        data.map((item) => {
+          let marker = L.marker([item.latitude, item.longitude])
+            .bindPopup(
+              `<strong >${item.nome}</strong> <br> Seus Pontos ${item.pontos}`
+            )
+            .addTo(map);
+        });
+      };
+    </script>
+  </body>
+</html>
